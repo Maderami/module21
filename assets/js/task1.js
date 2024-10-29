@@ -22,7 +22,7 @@ const xmlDOM = readXml('../assets/addfiles/listTask1.xml');
 
 let list = new Object(null);
 elemStudnet = xmlDOM.getElementsByTagName("student");
-
+console.log("Task1");
 for (let i = 0; i < elemStudnet.length; i++) {
     let first = elemStudnet[i]
         .getElementsByTagName("name")[0]
@@ -41,7 +41,7 @@ for (let i = 0; i < elemStudnet.length; i++) {
         .childNodes[0]
         .nodeValue;
     list = {
-        "FName:": first, "SName:": second, "Age:": age, "Prof:": prof
+        "name:": first + ' ' +second, "Age:": age, "Prof:": prof
     }
-    console.log("Task1",list);
+    console.log(list);
 }
