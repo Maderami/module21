@@ -5,55 +5,64 @@ const requestButton = document.querySelector('#request-button');
 
 // Функция для проверки ввода пользователя
 function checkInputs() {
-    let page = pageInput.value;
-    let limit = limitInput.value;
-
-    if (!page || !limit) {
-        return;
-    }
+    let page = parseInt(pageInput.value);
+    let limit = parseInt(limitInput.value);
 
     if (isNaN(page) || page < 1 || page > 10) {
         alert('Номер страницы вне диапазона от 1 до 10');
-        return;
+        return false;
     }
 
     if (isNaN(limit) || limit < 1 || limit > 10) {
         alert('Лимит вне диапазона от 1 до 10');
-        return;
+        return false;
     }
 
-    // Если оба ввода в диапазоне, делаем запрос
-    requestPage(page, limit);
+    return true;
 }
 
-// Функция для запроса данных с сервера
-function requestPage(page, limit) {
-    fetch(`https://picsum.photos/v2/list?page=${page}&limit=${limit}`)
-        .then(response => response.json())
-        .then(data => {
-            // Получаем список картинок
-            const images = data.photos;
+// Функция для выполнения запроса и отображения картинок
+function requestData() {
+    if (checkInputs()) {
+        let page = pageInput.value;
+        let limit = limitInput.value;
 
-            // Отображаем список картинок на странице
-            images.forEach(image => {
-                const imageElement = document.createElement('img');
-                imageElement.src = image.download_url;
-                document.body.appendChild(imageElement);
+        fetch(`https://picsum.photos/v2/list?page=${page}&limit=${limit}`)
+            .then(response => response.json())
+            .then(data => {
+                let images = data.data;
+                let output = '';
+
+                images.forEach(image => {
+                    output += `<img src="${image.url}" alt="${image.author}" style="width: 100px">`;
+                });
+
+                document.querySelector('#image-list').innerHTML = output;
             });
-
-            // Сохраняем данные в localStorage для перезагрузки страницы
-            localStorage.setItem('lastPage', page);
-            localStorage.setItem('lastLimit', limit);
-        })
-        .catch(error => {
-            console.error('Ошибка запроса:', error);
-        });
+    }
 }
 
-// Привязываем событие клика к кнопке
-requestButton.addEventListener('click', checkInputs);
+// Функция для сохранения последнего запроса в localStorage
+function saveData() {
+    let page = pageInput.value;
+    let limit = limitInput.value;
 
-// При загрузке страницы проверяем, есть ли данные в localStorage
-if (localStorage.getItem('lastPage') && localStorage.getItem('lastLimit')) {
-    requestPage(localStorage.getItem('lastPage'), localStorage.getItem('lastLimit'));
+    localStorage.setItem('lastPage', page);
+    localStorage.setItem('lastLimit', limit);
 }
+
+// Функция для загрузки последнего запроса при перезагрузке страницы
+function loadData() {
+    let lastPage = localStorage.getItem('lastPage');
+    let lastLimit = localStorage.getItem('lastLimit');
+
+    if (lastPage && lastLimit) {
+        pageInput.value = lastPage;
+        limitInput.value = lastLimit;
+        requestData();
+    }
+}
+
+// Привязка событий к элементам
+requestButton.addEventListener('click', requestData);
+window.addEventListener('load', loadData);
