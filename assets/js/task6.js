@@ -39,9 +39,9 @@ function requestData() {
 
                 images.forEach(image => {
                     output += `<img src="${image.url}" alt="${image.author}" style="width: 100px">`;
+                    console.log(image.url);
                 });
-
-                document.querySelector('#image-list').innerHTML = output;
+                document.querySelector('#image-list').appendChild(output);
             });
         saveData();
     }
