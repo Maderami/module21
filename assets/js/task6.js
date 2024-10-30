@@ -18,6 +18,10 @@ function checkInputs() {
         return false;
     }
 
+    if ((isNaN(limit) || limit < 1 || limit > 10) && (isNaN(page) || page < 1 || page > 10)) {
+        alert('Номер страницы и лимит вне диапазона от 1 до 10');
+        return false;
+    }
     return true;
 }
 
@@ -39,6 +43,7 @@ function requestData() {
 
                 document.querySelector('#image-list').innerHTML = output;
             });
+        saveData();
     }
 }
 
