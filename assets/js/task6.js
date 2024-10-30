@@ -24,14 +24,30 @@ function checkInputs() {
     }
     return true;
 }
+//Получение локальных изображений
+function getImageLocal(){
+    let arrImage = [
+        '1.jpg',
+        '2.jpg',
+        '3.jpg',
+        '4.jpg',
+        '5.jpg',
+        '6.jpg',
+        '7.jpg',
+        '8.jpg',
+        '9.jpg',
+        '10.jpg'
+    ];
+    return arrImage;
+}
 
 // Функция для выполнения запроса и отображения картинок
-function requestData() {
+async function requestAPIData() {
     if (checkInputs()) {
         let page = pageInput.value;
         let limit = limitInput.value;
-
-        fetch(`https://picsum.photos/v2/list?page=${page}&limit=${limit}`)
+        saveData();
+        let response = await fetch(`https://picsum.photos/v2/list?page=${page}&limit=${limit}`)
             .then(response => response.json())
             .then(data => {
                 let images = data.data;
@@ -42,11 +58,49 @@ function requestData() {
                     console.log(image.url);
                 });
                 document.querySelector('#image-list').appendChild(output);
-            });
-        saveData();
+            }).catch(mError => console.log('Ошибка подключения'));
+        if (response){
+            return fetch(`https://picsum.photos/v2/list?page=${page}&limit=${limit}`)
+                .then(response => response.json())
+                .then(data => {
+                    let images = data.data;
+                    let output = '';
+
+                    images.forEach(image => {
+                        output += `<img src="${image.url}" alt="${image.author}" style="width: 100px">`;
+                        console.log(image.url);
+                    });
+                    document.querySelector('#image-list').appendChild(output);
+                }).catch(mError => console.log('Ошибка подключения'));
+        }else {
+            return null;
+        }
+
+
+    }
+
+}
+function requestLocalDataFilter(){
+    if(checkInputs()){
+        let outputLocal = '';
+        for(let index = parseInt(pageInput.value) - 1; index < limitInput.value; index++){
+
+            outputLocal += `<img src="assets/image/${getImageLocal()[index]}" alt="" style="width: 100px">`;
+            document.querySelector('#image-list').innerHTML = outputLocal;
+
+        }
     }
 }
 
+function requestLocalDataAll(){
+    if(checkInputs()){
+        let outputLocal = '';
+        for(let index = 0; index < getImageLocal().length; index++){
+            outputLocal += `<img src="assets/image/${getImageLocal()[index]}" alt="" style="width: 100px">`;
+            document.querySelector('#image-list').innerHTML = outputLocal;
+        }
+    }
+}
 // Функция для сохранения последнего запроса в localStorage
 function saveData() {
     let page = pageInput.value;
@@ -64,12 +118,15 @@ function loadData() {
     if (lastPage && lastLimit) {
         pageInput.value = lastPage;
         limitInput.value = lastLimit;
-        requestData();
+        requestAPIData().then(r => r);
+        requestLocalDataFilter();
+    }else{
+        requestLocalDataAll();
     }
 }
 
 // Привязка событий к элементам
-requestButton.addEventListener('click', requestData);
+requestButton.addEventListener('click', requestAPIData || requestLocalDataFilter);
 window.addEventListener('load', loadData);
 
 
