@@ -66,3 +66,6 @@ function loadData() {
 // Привязка событий к элементам
 requestButton.addEventListener('click', requestData);
 window.addEventListener('load', loadData);
+
+
+
