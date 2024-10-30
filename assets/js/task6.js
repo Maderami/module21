@@ -1,31 +1,59 @@
-form = document.getElementById('puggForm');
-filterBtn = document.getElementById('filterBtn');
+// Получаем элементы с HTML-страницы
+const pageInput = document.querySelector('#page-input');
+const limitInput = document.querySelector('#limit-input');
+const requestButton = document.querySelector('#request-button');
 
-filterBtn.addEventListener('click', (event) => {
-    numberPage = document.getElementById("numberPage").value;
-    limitElement = document.getElementById("limitElement").value;
-    messageError = document.getElementById('messageError');
-    localStorage.setItem("numberPage", numberPage);
-    localStorage.setItem("limitElement", limitElement);
-    if ((numberPage > 0 && numberPage <= 10) && (limitElement > 0 && limitElement <= 10)) {
-        messageError.innerText = '';
-        localStorage.removeItem("messageError");
-        form.action = '/v2/list?page=' + localStorage.getItem("numberPage") + '&limit=' + localStorage.getItem("limitElement");
-    }else if ((isNaN(limitElement) && isNaN(numberPage)) ||  ((numberPage > 10 && limitElement > 10) || (numberPage < 1 && limitElement < 1))) {
-        localStorage.setItem("messageError", 'Номер страницы и лимит вне диапазона от 1 до 10');
-    }else if ((numberPage > 10 || numberPage < 1) || isNaN(numberPage)) {
-        localStorage.setItem("messageError", 'Номер страницы вне диапазона от 1 до 10');
-    }else if ((limitElement > 10 || limitElement < 1) || isNaN(limitElement)) {
-        localStorage.setItem("messageError", 'Лимит вне диапазона от 1 до 10');
+// Функция для проверки ввода пользователя
+function checkInputs() {
+    let page = pageInput.value;
+    let limit = limitInput.value;
+
+    if (!page || !limit) {
+        return;
     }
 
-});
-
-window.onload = function (){
-    if(filterBtn.onclick) {
-        messageError.innerText = localStorage.getItem("messageError");
-        localStorage.removeItem("messageError");
-    }else if (window.onload){
-        messageError.innerText = localStorage.getItem("messageError");
+    if (isNaN(page) || page < 1 || page > 10) {
+        alert('Номер страницы вне диапазона от 1 до 10');
+        return;
     }
+
+    if (isNaN(limit) || limit < 1 || limit > 10) {
+        alert('Лимит вне диапазона от 1 до 10');
+        return;
+    }
+
+    // Если оба ввода в диапазоне, делаем запрос
+    requestPage(page, limit);
+}
+
+// Функция для запроса данных с сервера
+function requestPage(page, limit) {
+    fetch(`https://picsum.photos/v2/list?page=${page}&limit=${limit}`)
+        .then(response => response.json())
+        .then(data => {
+            // Получаем список картинок
+            const images = data.photos;
+
+            // Отображаем список картинок на странице
+            images.forEach(image => {
+                const imageElement = document.createElement('img');
+                imageElement.src = image.download_url;
+                document.body.appendChild(imageElement);
+            });
+
+            // Сохраняем данные в localStorage для перезагрузки страницы
+            localStorage.setItem('lastPage', page);
+            localStorage.setItem('lastLimit', limit);
+        })
+        .catch(error => {
+            console.error('Ошибка запроса:', error);
+        });
+}
+
+// Привязываем событие клика к кнопке
+requestButton.addEventListener('click', checkInputs);
+
+// При загрузке страницы проверяем, есть ли данные в localStorage
+if (localStorage.getItem('lastPage') && localStorage.getItem('lastLimit')) {
+    requestPage(localStorage.getItem('lastPage'), localStorage.getItem('lastLimit'));
 }
