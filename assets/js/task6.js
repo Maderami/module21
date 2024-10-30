@@ -48,20 +48,12 @@ async function requestAPIData() {
         let limit = limitInput.value;
         saveData();
         let response = await fetch(`https://picsum.photos/v2/list?page=${page}&limit=${limit}`)
-            .then(response => response.json())
-            .then(data => {
-                let images = data.data;
-                let output = '';
 
-                images.forEach(image => {
-                    output += `<img src="${image.url}" alt="${image.author}" style="width: 100px">`;
-                    console.log(image.url);
-                });
-                document.querySelector('#image-list').appendChild(output);
-            }).catch(mError => console.log('Ошибка подключения'));
-        if (response){
-            return fetch(`https://picsum.photos/v2/list?page=${page}&limit=${limit}`)
-                .then(response => response.json())
+        if (response.status === 200){
+            return fetch(`https://picsum.photos/v2/list?page=${page}&limit=${limit}`);
+
+        }else if(response.status !== 200){
+            return response.then(response => response.json())
                 .then(data => {
                     let images = data.data;
                     let output = '';
@@ -71,12 +63,8 @@ async function requestAPIData() {
                         console.log(image.url);
                     });
                     document.querySelector('#image-list').appendChild(output);
-                }).catch(mError => console.log('Ошибка подключения'));
-        }else {
-            return null;
+                });
         }
-
-
     }
 
 }
@@ -84,7 +72,6 @@ function requestLocalDataFilter(){
     if(checkInputs()){
         let outputLocal = '';
         for(let index = parseInt(pageInput.value) - 1; index < limitInput.value; index++){
-
             outputLocal += `<img src="assets/image/${getImageLocal()[index]}" alt="" style="width: 100px">`;
             document.querySelector('#image-list').innerHTML = outputLocal;
 
@@ -93,13 +80,13 @@ function requestLocalDataFilter(){
 }
 
 function requestLocalDataAll(){
-    if(checkInputs()){
+
         let outputLocal = '';
         for(let index = 0; index < getImageLocal().length; index++){
             outputLocal += `<img src="assets/image/${getImageLocal()[index]}" alt="" style="width: 100px">`;
             document.querySelector('#image-list').innerHTML = outputLocal;
         }
-    }
+
 }
 // Функция для сохранения последнего запроса в localStorage
 function saveData() {
@@ -126,7 +113,7 @@ function loadData() {
 }
 
 // Привязка событий к элементам
-requestButton.addEventListener('click', requestAPIData || requestLocalDataFilter);
+requestButton.addEventListener('click', requestAPIData);
 window.addEventListener('load', loadData);
 
 
